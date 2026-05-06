@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drifto — Early Access Whitelist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #8b5cf6;
+      --purple-light: #c084fc;
+      --purple-dim: rgba(139,92,246,0.15);
+      --purple-border: rgba(139,92,246,0.35);
+      --bg: #08080f;
+      --bg-card: #10101a;
+      --bg-card2: #0d0d16;
+      --text: #e8e6f2;
+      --text-muted: #6a6880;
+      --text-dim: #3d3b50;
+      --border: rgba(255,255,255,0.07);
+      --green: #4ade80;
+      --green-bg: rgba(74,222,128,0.1);
+      --green-border: rgba(74,222,128,0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND EFFECTS ── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+    }
+    .bg-orb-1 {
+      width: 700px; height: 500px;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(109,40,217,0.22) 0%, transparent 70%);
+    }
+    .bg-orb-2 {
+      width: 400px; height: 400px;
+      bottom: 10%; right: -100px;
+      background: radial-gradient(ellipse, rgba(192,132,252,0.1) 0%, transparent 70%);
+    }
+
+    /* noise grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── HEADER ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(139,92,246,0.12);
+      border: 1px solid var(--purple-border);
+      color: #b89cff;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 2.5px;
+      padding: 5px 14px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .chip-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .logo {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1.5px;
+      line-height: 1;
+      margin-bottom: 10px;
+      animation: fadeUp 0.5s 0.08s ease both;
+    }
+    .logo span { color: var(--purple-light); }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      animation: fadeUp 0.5s 0.13s ease both;
+    }
+
+    .desc {
+      font-size: 15px;
+      color: #8e8aaa;
+      text-align: center;
+      max-width: 360px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      animation: fadeUp 0.5s 0.18s ease both;
+    }
+
+    /* ── STATS ROW ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s 0.22s ease both;
+    }
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── TIMER ── */
+    .timer-wrap {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s 0.26s ease both;
+    }
+    .timer-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .timer-digits {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 2px;
+    }
+    .timer-digits span { color: var(--purple-light); }
+
+    /* ── TASK CARD ── */
+    .task-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+
+    .task-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .task-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .tasks-counter {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+    }
+    .tasks-counter b {
+      color: var(--purple-light);
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      gap: 12px;
+    }
+    .task-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .task-item:first-child { padding-top: 0; }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .icon-x {
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+    }
+    .icon-tg {
+      background: rgba(41,182,246,0.12);
+      font-size: 20px;
+    }
+    .icon-rt {
+      background: rgba(74,222,128,0.1);
+      font-size: 18px;
+    }
+
+    .task-info { min-width: 0; }
+    .task-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .task-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .task-right { flex-shrink: 0; }
+
+    .btn-verify {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.13);
+      color: #b89cff;
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+    .btn-verify:hover {
+      background: var(--purple-dim);
+      border-color: var(--purple);
+      color: var(--purple-light);
+    }
+
+    .badge-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 7px 13px;
+      border-radius: 9px;
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .progress-pct {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple-light);
+      font-family: 'Space Mono', monospace;
+    }
+    .progress-track {
+      height: 5px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6d28d9, #c084fc);
+      border-radius: 100px;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    /* ── WALLET SECTION ── */
+    .wallet-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      animation: fadeUp 0.5s 0.35s ease both;
+    }
+    .wallet-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .wallet-input-wrap {
+      display: flex;
+      gap: 10px;
+    }
+    .wallet-input {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .wallet-input::placeholder { color: var(--text-dim); }
+    .wallet-input:focus { border-color: var(--purple); }
+    .wallet-submit {
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-border);
+      color: #b89cff;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 11px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .wallet-submit:hover { background: rgba(139,92,246,0.28); }
+    .wallet-note {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── GENERATE BUTTON ── */
+    .btn-generate {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 60%, #c084fc 100%);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      margin-bottom: 16px;
+      animation: fadeUp 0.5s 0.4s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-generate::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    }
+    .btn-generate:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+    .btn-generate:not(:disabled):hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 32px rgba(139,92,246,0.35);
+    }
+    .btn-generate:not(:disabled):active { transform: scale(0.99); }
+
+    /* ── CODE REVEAL ── */
+    .code-reveal {
+      width: 100%;
+      background: var(--bg-card2);
+      border: 1px solid var(--purple-border);
+      border-radius: 16px;
+      padding: 26px 24px;
+      display: none;
+      margin-bottom: 16px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .code-reveal.show { display: block; }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .code-heading {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      color: var(--purple-light);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse 2s infinite;
+    }
+    .code-valid {
+      font-size: 10px;
+      color: var(--green);
+      font-family: 'Space Mono', monospace;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .code-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 6px;
+      margin-bottom: 18px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .code-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-copy {
+      flex: 1;
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-border);
+      color: #b89cff;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(139,92,246,0.28); }
+    .btn-share {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 11px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-share:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+
+    .code-meta {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .meta-item {}
+    .meta-key {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .meta-val {
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      color: #9a96b8;
+    }
+
+    /* ── FOOTER ── */
+    .footer-note {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+      text-align: center;
+      line-height: 1.8;
+      margin-top: 8px;
+      animation: fadeUp 0.5s 0.45s ease both;
+    }
+    .footer-note a { color: var(--purple-light); text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #1a1828;
+      border: 1px solid var(--purple-border);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      padding: 12px 22px;
+      border-radius: 100px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.4; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .wrapper { padding: 40px 16px 60px; }
+      .logo { font-size: 32px; }
+      .stats { grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .stat-num { font-size: 18px; }
+      .code-value { font-size: 16px; letter-spacing: 4px; }
+      .wallet-input-wrap { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="chip">
+    <span class="chip-dot"></span>
+    Whitelist · Season 1
+  </div>
+
+  <div class="logo">Drift<span>o</span></div>
+  <div class="tagline">by OriginStake · Early Access</div>
+  <div class="desc">
+    Complete the tasks below to secure your spot on the Drifto whitelist and receive exclusive early-access privileges.
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-spots">2,847</div>
+      <div class="stat-label">Spots left</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">5,000</div>
+      <div class="stat-label">Total slots</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-joined">2,153</div>
+      <div class="stat-label">Joined</div>
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div class="timer-wrap">
+    <div class="timer-label">⏳ Whitelist closes in</div>
+    <div class="timer-digits" id="timer">
+      <span id="t-h">47</span>h &nbsp;<span id="t-m">59</span>m &nbsp;<span id="t-s">59</span>s
+    </div>
+  </div>
+
+  <!-- TASK CARD -->
+  <div class="task-card">
+    <div class="task-card-header">
+      <div class="task-card-title">Required Tasks</div>
+      <div class="tasks-counter"><b id="done-count">0</b> / 3 done</div>
+    </div>
+
+    <!-- Task 1: Follow X -->
+    <div class="task-item" id="task-x">
+      <div class="task-left">
+        <div class="task-icon icon-x">𝕏</div>
+        <div class="task-info">
+          <div class="task-name">Follow on X (Twitter)</div>
+          <div class="task-sub">@OriginStake · @Drifto_fi</div>
+        </div>
+      </div>
+      <div class="task-right">
+        <button class="btn-verify" onclick="openAndVerify('x','https://x.com/OriginStake')">Follow →</button>
+      </div>
+    </div>
+
+    <!-- Task 2: Join Telegram -->
+    <div class="task-item" id="task-tg">
+      <div class="task-left">
+        <div class="task-icon icon-tg">✈</div>
+        <div class="task-info">
+          <div class="task-name">Join Telegram Community</div>
+          <div class="task-sub">t.me/OriginStake</div>
+        </div>
+      </div>
+      <div class="task-right">
+        <button class="btn-verify" onclick="openAndVerify('tg','https://t.me/OriginStake')">Join →</button>
+      </div>
+    </div>
+
+    <!-- Task 3: Retweet -->
+    <div class="task-item" id="task-rt">
+      <div class="task-left">
+        <div class="task-icon icon-rt">🔁</div>
+        <div class="task-info">
+          <div class="task-name">Retweet Announcement</div>
+          <div class="task-sub">Pin post · +50 bonus points</div>
+        </div>
+      </div>
+      <div class="task-right">
+        <button class="btn-verify" onclick="openAndVerify('rt','https://x.com/OriginStake')">RT →</button>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <div class="progress-text">Progress</div>
+        <div class="progress-pct" id="progress-pct">0%</div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALLET CARD -->
+  <div class="wallet-card">
+    <div class="wallet-label">Wallet Address (Optional)</div>
+    <div class="wallet-input-wrap">
+      <input class="wallet-input" type="text" id="wallet-input" placeholder="0x... or your EVM address" />
+      <button class="wallet-submit" onclick="saveWallet()">Save</button>
+    </div>
+    <div class="wallet-note">* Your address will be linked to this whitelist code for airdrop distribution.</div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <button class="btn-generate" id="btn-generate" disabled onclick="generateCode()">
+    🔓 Generate Access Code
+  </button>
+
+  <!-- CODE REVEAL -->
+  <div class="code-reveal" id="code-reveal">
+    <div class="code-top">
+      <div class="code-heading">
+        <span class="pulse-dot"></span>
+        Your Access Code
+      </div>
+      <span class="code-valid">✓ Valid</span>
+    </div>
+    <div class="code-value" id="code-value">——</div>
+    <div class="code-actions">
+      <button class="btn-copy" onclick="copyCode()">📋 Copy Code</button>
+      <button class="btn-share" onclick="shareCode()">Share ↗</button>
+    </div>
+    <div class="code-meta">
+      <div class="meta-item">
+        <div class="meta-key">Issued</div>
+        <div class="meta-val" id="meta-time">—</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">Wallet</div>
+        <div class="meta-val" id="meta-wallet">Not linked</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">Tier</div>
+        <div class="meta-val">Early Access</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-key">Bonus Pts</div>
+        <div class="meta-val" id="meta-pts">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+    Powered by <a href="https://originstake.com" target="_blank">OriginStake</a> · Vietnam's #1 Validator<br>
+    1 code per wallet · Non-transferable · Season 1 only
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── STATE ──
+  const tasksDone = { x: false, tg: false, rt: false };
+  const TOTAL_TASKS = 3;
+
+  // ── COUNTDOWN TIMER ──
+  let endTime = Date.now() + 48 * 60 * 60 * 1000;
+  function updateTimer() {
+    const diff = Math.max(0, endTime - Date.now());
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('t-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('t-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('t-s').textContent = String(s).padStart(2,'0');
+  }
+  setInterval(updateTimer, 1000);
+  updateTimer();
+
+  // ── SPOTS COUNTER animation ──
+  let spots = 2847;
+  setInterval(() => {
+    if (Math.random() < 0.3 && spots > 100) {
+      spots -= Math.floor(Math.random() * 3) + 1;
+      document.getElementById('stat-spots').textContent = spots.toLocaleString();
+      const joined = 5000 - spots;
+      document.getElementById('stat-joined').textContent = joined.toLocaleString();
+    }
+  }, 4000);
+
+  // ── OPEN LINK & VERIFY ──
+  function openAndVerify(taskId, url) {
+    window.open(url, '_blank');
+    setTimeout(() => completeTask(taskId), 1800);
+  }
+
+  function completeTask(taskId) {
+    if (tasksDone[taskId]) return;
+    tasksDone[taskId] = true;
+
+    const row = document.getElementById('task-' + taskId);
+    const btn = row.querySelector('.btn-verify');
+    btn.outerHTML = '<span class="badge-done">✓ Done</span>';
+
+    updateProgress();
+    showToast('Task verified! ✓');
+  }
+
+  function updateProgress() {
+    const count = Object.values(tasksDone).filter(Boolean).length;
+    const pct = Math.round((count / TOTAL_TASKS) * 100);
+
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('done-count').textContent = count;
+
+    document.getElementById('btn-generate').disabled = count < TOTAL_TASKS;
+  }
+
+  // ── WALLET ──
+  function saveWallet() {
+    const val = document.getElementById('wallet-input').value.trim();
+    if (!val) { showToast('Please enter a wallet address.'); return; }
+    showToast('Wallet saved! ✓');
+    document.getElementById('meta-wallet').textContent = val.slice(0,6) + '...' + val.slice(-4);
+  }
+
+  // ── GENERATE CODE ──
+  function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 16; i++) {
+      if (i > 0 && i % 4 === 0) code += '-';
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    document.getElementById('code-value').textContent = code;
+
+    const now = new Date();
+    document.getElementById('meta-time').textContent =
+      now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+
+    const wallet = document.getElementById('wallet-input').value.trim();
+    if (wallet) {
+      document.getElementById('meta-wallet').textContent = wallet.slice(0,6) + '...' + wallet.slice(-4);
+    }
+
+    const bonus = tasksDone.rt ? '50 pts' : '0 pts';
+    document.getElementById('meta-pts').textContent = bonus;
+
+    document.getElementById('code-reveal').classList.add('show');
+    document.getElementById('btn-generate').textContent = '✓ Code Generated';
+    document.getElementById('btn-generate').disabled = true;
+
+    showToast('🎉 Access code generated!');
+    document.getElementById('code-reveal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── COPY ──
+  function copyCode() {
+    const code = document.getElementById('code-value').textContent;
+    navigator.clipboard.writeText(code).catch(() => {});
+    showToast('Code copied to clipboard! 📋');
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+  }
+
+  // ── SHARE ──
+  function shareCode() {
+    const code = document.getElementById('code-value').textContent;
+    const text = `I just secured my spot on the @Drifto_fi whitelist! 🎉\n\nCode: ${code}\n\nGet yours → ${window.location.href}`;
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).catch(() => {});
+      showToast('Share text copied!');
+    }
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
