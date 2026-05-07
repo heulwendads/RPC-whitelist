@@ -306,17 +306,33 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Processing...';
 
-    fetch(SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, company, email, code })
-    })
-    .then(() => { showResult(name, company, email, code); })
-    .catch(() => {
-      // fallback: show anyway
-      showResult(name, company, email, code);
+    // Dùng hidden form để gửi data — tránh CORS, Apps Script đọc được e.parameter
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SHEET_URL;
+    form.target = 'hidden-iframe';
+    form.style.display = 'none';
+    const fields = { name, company, email, code };
+    Object.entries(fields).forEach(([k, v]) => {
+      const inp = document.createElement('input');
+      inp.name = k; inp.value = v;
+      form.appendChild(inp);
     });
+    document.body.appendChild(form);
+
+    // iframe ẩn để submit không reload trang
+    let iframe = document.getElementById('hidden-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'hidden-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    form.submit();
+    document.body.removeChild(form);
+
+    showResult(name, company, email, code);
   }
 
   function showResult(name, company, email, code) {
